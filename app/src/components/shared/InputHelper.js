@@ -1,0 +1,1 @@
+export const trimInput = (val)=> val.trim();

@@ -1,0 +1,57 @@
+version: "3.2"
+
+services:
+    front:
+        restart: unless-stopped
+        image: ${CI_REGISTRY_IMAGE}/front
+        build:
+            context: './../'
+            dockerfile: 'docker/nginx/Dockerfile'
+        depends_on:
+            - postgrest
+        links:
+          - postgrest
+        networks:
+            - frontend
+            - backend
+
+    db:
+        restart: unless-stopped
+        image: ${CI_REGISTRY_IMAGE}/db
+        build:
+          dockerfile: ./build/Dockerfile
+          context: ./db/
+        environment:
+            POSTGRES_USER: example
+            POSTGRES_PASSWORD: 7SxV<+*rhB8x}b>h
+            POSTGRES_DB: time_management
+        volumes:
+            - time_management_data:/var/lib/postgresql/data
+        networks:
+            - backend
+
+
+    postgrest:
+        restart: unless-stopped
+        image: postgrest/postgrest
+        links:
+            - db:db
+        environment:
+            PGRST_DB_URI: postgres://example:7SxV<+*rhB8x}b>h@db:5432/time_management
+            PGRST_DB_SCHEMA: api
+            PGRST_DB_ANON_ROLE: time_anon
+            PGRST_JWT_SECRET: 759995ab-e588-4166-a821-47a63725d90a
+        depends_on:
+            - db
+        networks:
+            - backend
+
+
+
+
+volumes:
+    time_management_data:
+
+networks:
+    backend:
+    frontend:
